@@ -4,7 +4,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import AuthPage from './pages/Auth/AuthPage';
 import HomePage from './pages/HomePage';
 import MyPage from './pages/my/MyPage';
-import AdminPage from './pages/AdminPage';
+import UserPage from './pages/my/UserPage';
+import AdminPage from './pages/admin/AdminPage';
 import BoardPage from './pages/Board/BoardPage';
 import BoardDetail from './pages/Board/BoardDetail';
 import ReviewPage from './pages/ReviewPage';
@@ -38,6 +39,10 @@ const App = () => {
 
         {/* 마이 페이지 */}
         <Route path="/mypage" element={<MyPage />} />
+
+        {/* 유저 페이지 */}
+        <Route path="/Userpage" element={<UserPage />} />
+
 
         {/* 어드민 페이지 */}
         <Route path="/admin" element={<AdminPage />} />

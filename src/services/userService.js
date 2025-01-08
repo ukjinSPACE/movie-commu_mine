@@ -35,8 +35,8 @@ export const login = async (username, password) => {
     const response = await axios.post(`${API_BASE_URL}/login`, formData);
     return response.data; // 로그인 결과 반환
   } catch (error) {
-    //console.error('로그인 중 오류 발생:', error);
-    //throw error;
+    console.error('로그인 중 오류 발생:', error);
+    throw error;
   }
 };
 
@@ -60,8 +60,8 @@ export const signup = async (userDto) => {
 
     return response.data; // 서버 응답 반환
   } catch (error) {
-    //console.error('회원가입 중 오류 발생:', error);
-    //throw error.response?.data || new Error('회원가입 요청 중 에러 발생');
+    console.error('회원가입 중 오류 발생:', error);
+    throw error.response?.data || new Error('회원가입 요청 중 에러 발생');
   }
 };
 

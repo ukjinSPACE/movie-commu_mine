@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { getUserManageInfo, addMovie } from '../services/adminService';
+import { getUserManageInfo, addMovie } from '../../services/adminService';
 import { useNavigate } from 'react-router-dom';
-import { isAdminUser } from '../services/userService';
+import { isAdminUser } from '../../services/userService';
 import './AdminPage.css';
+import '../../styles/dark-theme.css'; // 공통 스타일
 
 const AdminPage = () => {
+  // 더미 데이터
+  const dummyUsers = [
+    { id: 1, nickname: "JohnDoe", email: "johndoe@example.com", phone: "010-1234-5678", birth: "1990-01-01" },
+    { id: 2, nickname: "JaneDoe", email: "janedoe@example.com", phone: "010-2345-6789", birth: "1992-02-02" },
+    { id: 3, nickname: "MarkSmith", email: "marksmith@example.com", phone: "010-3456-7890", birth: "1988-03-03" },
+    { id: 4, nickname: "LucyJones", email: "lucyjones@example.com", phone: "010-4567-8901", birth: "1995-04-04" },
+  ];
+
   const [tab, setTab] = useState('user'); // 현재 탭
-  const [users, setUsers] = useState([]);
-  const [userCnt, setUserCnt] = useState(0);
+  const [users, setUsers] = useState(dummyUsers); // 더미 데이터를 초기값으로 설정
+  const [userCnt, setUserCnt] = useState(dummyUsers.length); // 사용자 수를 더미 데이터 수로 설정
   const [page, setPage] = useState(1);
   const [size] = useState(10); // 한 페이지에 보여줄 사용자 수
   const [movieForm, setMovieForm] = useState({
@@ -35,9 +44,7 @@ const AdminPage = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await getUserManageInfo(size, page);
-      setUsers(response.users);
-      setUserCnt(response.userCnt);
+      console.log('Fetching users from dummy data');
     } catch (error) {
       console.error('사용자 관리 정보를 가져오는 중 오류가 발생했습니다:', error);
     }
@@ -50,6 +57,13 @@ const AdminPage = () => {
     } else {
       setMovieForm({ ...movieForm, [name]: value });
     }
+  };
+
+  const deleteUser = (id) => {
+    const updatedUsers = users.filter((user) => user.id !== id); // ID로 사용자 삭제
+    setUsers(updatedUsers); // 사용자 목록 갱신
+    setUserCnt(updatedUsers.length); // 사용자 수 갱신
+    alert(`사용자 ID ${id}가 삭제되었습니다.`);
   };
 
   const submitMovie = async (e) => {
@@ -87,6 +101,7 @@ const AdminPage = () => {
                 <th>이메일</th>
                 <th>휴대전화번호</th>
                 <th>생년월일</th>
+                <th> </th> {/* 삭제 버튼 열 추가 */}
               </tr>
             </thead>
             <tbody>
@@ -97,6 +112,14 @@ const AdminPage = () => {
                   <td>{user.email}</td>
                   <td>{user.phone}</td>
                   <td>{user.birth}</td>
+                  <td>
+                    <button
+                      className="delete-button"
+                      onClick={() => deleteUser(user.id)}
+                    >
+                      삭제
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

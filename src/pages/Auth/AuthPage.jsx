@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login, signup } from '../../services/userService';
 import './AuthPage.css';
+import '../../styles/dark-theme.css'; // 공통 스타일
 
 const AuthPage = () => {
   const [activeTab, setActiveTab] = useState('login'); // 'login' 또는 'signup'

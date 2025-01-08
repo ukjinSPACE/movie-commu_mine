@@ -1,0 +1,105 @@
+.admin-container {
+  max-width: 1200px;
+  margin: 50px auto;
+  padding: 20px;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-header h1 {
+  color: #ffffff;
+  font-size: 28px;
+}
+
+.admin-stats {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+}
+
+.stat-card {
+  flex: 1;
+  margin: 0 10px;
+  background-color: #3a3a3a;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  color: #cccccc;
+}
+
+.stat-card h2 {
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #3a3a3a;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #4e4e4e;
+}
+
+.admin-table th {
+  background-color: #444444;
+  color: #ffffff;
+}
+
+.admin-table tr:hover {
+  background-color: #505050;
+}
+
+
+/* 테이블 스타일 */
+.user-management table {
+  width: 100%;
+  border-collapse: collapse; /* 셀 경계선 겹침 방지 */
+  margin-top: 20px;
+}
+
+.user-management th,
+.user-management td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #dcdcdc; /* 연한 선 */
+}
+
+.user-management th {
+  background-color: #f4f4f4; /* 헤더 배경색 */
+  font-weight: bold;
+}
+
+.user-management tr:hover {
+  background-color: #f9f9f9; /* 행에 마우스 오버 시 배경색 */
+}
+
+.pagination {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.delete-button {
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background-color: #ff7875;
+}

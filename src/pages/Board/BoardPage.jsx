@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './BoardPage.css';
+import '../../styles/dark-theme.css'; // 공통 스타일
 
 const BoardPage = () => {
   const [posts, setPosts] = useState([]);

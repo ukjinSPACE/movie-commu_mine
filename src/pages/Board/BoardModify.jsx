@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './BoardModify.css';
+import '../../styles/dark-theme.css'; // 공통 스타일
 
 const BoardModify = () => {
   const { postId } = useParams(); // URL에서 게시글 ID를 가져옵니다.

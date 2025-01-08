@@ -1,0 +1,64 @@
+/* MyPage.css */
+
+.my-page-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  .content-container {
+    display: flex;
+    flex: 1;
+  }
+  
+  .sidebar {
+    width: 200px;
+    border-right: 1px solid #ddd;
+    padding: 10px;
+    background-color: #f9f9f9;
+  }
+  
+  .sidebar button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: none;
+    cursor: pointer;
+    background-color: #f1f1f1;
+    border-radius: 4px;
+  }
+  
+  .sidebar button.active {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .content {
+    flex: 1;
+    padding: 20px;
+  }
+  
+  .home-button-container {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    background-color: #f1f1f1;
+    padding: 10px 0;
+  }
+  
+  .home-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .home-button:hover {
+    background-color: #0056b3;
+  }
+  

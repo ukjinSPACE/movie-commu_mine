@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './BoardDetail.css';
+import '../../styles/dark-theme.css'; // 공통 스타일
 
 const BoardDetail = () => {
   const { postId } = useParams();

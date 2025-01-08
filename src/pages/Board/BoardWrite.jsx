@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './BoardWrite.css';
+import '../../styles/dark-theme.css'; // 공통 스타일
 
 const BoardWrite = () => {
   const [title, setTitle] = useState('');
