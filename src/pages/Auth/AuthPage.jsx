@@ -17,6 +17,8 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 관리
+  const [passwordMatch, setPasswordMatch] = useState(true); // 비밀번호 일치 여부
+  const [passwordConfirmEmpty, setPasswordConfirmEmpty] = useState(false); // 비밀번호 확인 비어있는지 체크
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,6 +41,12 @@ const AuthPage = () => {
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    
+    // 비밀번호와 비밀번호 확인이 일치하는지 실시간으로 체크
+    if (e.target.name === 'password' || e.target.name === 'passwordConfirm') {
+      setPasswordMatch(formData.password === formData.passwordConfirm);
+      setPasswordConfirmEmpty(formData.passwordConfirm === '');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -79,8 +87,8 @@ const AuthPage = () => {
         return;
       }
 
-      if (formData.password !== formData.passwordConfirm) {
-        setErrorMessage('비밀번호가 일치하지 않습니다.');
+      if (!passwordMatch || passwordConfirmEmpty) {
+        setErrorMessage('비밀번호가 일치하지 않거나, 비밀번호 재확인이 필요합니다.');
         return;
       }
 
@@ -207,6 +215,20 @@ const AuthPage = () => {
                   onChange={handleInputChange}
                   disabled={loading}
                 />
+                {/* 비밀번호 확인란이 비어있을 때 메시지 표시 */}
+                {passwordConfirmEmpty && (
+                  <p style={{ color: 'orange' }}>비밀번호 재확인이 필요합니다</p>
+                )}
+                {/* 비밀번호 일치 여부 표시, 비밀번호 확인란이 비어있지 않으면 표시 */}
+                {!passwordConfirmEmpty && (
+                  <p
+                    style={{
+                      color: passwordMatch ? 'green' : 'red',
+                    }}
+                  >
+                    {passwordMatch ? '비밀번호가 일치합니다' : '비밀번호가 일치하지 않습니다'}
+                  </p>
+                )}
               </div>
               <div>
                 <label htmlFor="nickname">닉네임</label>
@@ -248,7 +270,7 @@ const AuthPage = () => {
 
           {errorMessage && <p className="error-message">{errorMessage}</p>}
 
-          <button type="submit" disabled={loading}>
+          <button type="submit" disabled={loading || !passwordMatch || passwordConfirmEmpty}>
             {loading
               ? '처리 중...'
               : activeTab === 'login'

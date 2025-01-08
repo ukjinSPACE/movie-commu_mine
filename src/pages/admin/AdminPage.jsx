@@ -60,12 +60,17 @@ const AdminPage = () => {
   };
 
   const deleteUser = (id) => {
-    const updatedUsers = users.filter((user) => user.id !== id); // ID로 사용자 삭제
-    setUsers(updatedUsers); // 사용자 목록 갱신
-    setUserCnt(updatedUsers.length); // 사용자 수 갱신
-    alert(`사용자 ID ${id}가 삭제되었습니다.`);
+    const userToDelete = users.find(user => user.id === id); // 삭제할 사용자 정보 찾기
+    const confirmation = window.confirm(`${userToDelete.nickname} 님을 정말로 삭제하시겠습니까?`);
+  
+    if (confirmation) {
+      const updatedUsers = users.filter((user) => user.id !== id); // ID로 사용자 삭제
+      setUsers(updatedUsers); // 사용자 목록 갱신
+      setUserCnt(updatedUsers.length); // 사용자 수 갱신
+      alert(`${userToDelete.nickname} 님이 삭제되었습니다.`);
+    }
   };
-
+  
   const submitMovie = async (e) => {
     e.preventDefault();
     try {
