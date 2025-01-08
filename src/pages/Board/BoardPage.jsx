@@ -30,7 +30,7 @@ const BoardPage = () => {
   };
 
   const handleWritePost = () => {
-    navigate('/board/new');
+    navigate('/board/write');
   };
 
   const handlePostClick = (postId) => {

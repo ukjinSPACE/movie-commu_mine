@@ -1,24 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { getUserManageInfo, createAdminAccount } from '../services/adminService';
+import { getUserManageInfo, addMovie } from '../services/adminService';
+import { useNavigate } from 'react-router-dom';
+import { isAdminUser } from '../services/userService';
 import './AdminPage.css';
 
 const AdminPage = () => {
-  const [activeTab, setActiveTab] = useState('userManage'); // 초기 탭 설정
+  const [tab, setTab] = useState('user'); // 현재 탭
   const [users, setUsers] = useState([]);
   const [userCnt, setUserCnt] = useState(0);
   const [page, setPage] = useState(1);
   const [size] = useState(10); // 한 페이지에 보여줄 사용자 수
+  const [movieForm, setMovieForm] = useState({
+    title: '',
+    director: '',
+    genre: '',
+    releaseDate: '',
+    image: null,
+  });
 
-  const [adminUsername, setAdminUsername] = useState('');
-  const [adminPassword, setAdminPassword] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (activeTab === 'userManage') {
+    if (!isAdminUser()) {
+      alert('접근 권한이 없습니다. 관리자 계정으로 로그인하세요.');
+      navigate('/auth');
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (tab === 'user') {
       fetchUsers();
     }
-  }, [activeTab, page]);
+  }, [tab, page]);
 
-  // 사용자 관리 정보 가져오기
   const fetchUsers = async () => {
     try {
       const response = await getUserManageInfo(size, page);
@@ -29,94 +43,104 @@ const AdminPage = () => {
     }
   };
 
-  // 관리자 계정 생성
-  const handleCreateAdminAccount = async () => {
-    if (!adminUsername || !adminPassword) {
-      alert('관리자 계정 정보(아이디와 비밀번호)를 입력하세요.');
-      return;
+  const handleMovieFormChange = (e) => {
+    const { name, value, files } = e.target;
+    if (name === 'image') {
+      setMovieForm({ ...movieForm, image: files[0] });
+    } else {
+      setMovieForm({ ...movieForm, [name]: value });
     }
+  };
 
+  const submitMovie = async (e) => {
+    e.preventDefault();
     try {
-      const response = await createAdminAccount(adminUsername, adminPassword);
-      alert('관리자 계정이 성공적으로 생성되었습니다.');
-      setAdminUsername('');
-      setAdminPassword('');
+      const formData = new FormData();
+      for (const key in movieForm) {
+        formData.append(key, movieForm[key]);
+      }
+      await addMovie(formData);
+      alert('영화가 성공적으로 추가되었습니다.');
+      setMovieForm({ title: '', director: '', genre: '', releaseDate: '', image: null });
     } catch (error) {
-      console.error('관리자 계정 생성 중 오류가 발생했습니다:', error);
+      console.error('영화를 추가하는 중 오류가 발생했습니다:', error);
+      alert('영화를 추가하는 중 오류가 발생했습니다.');
     }
   };
 
   return (
     <div className="admin-page-container">
-      <div className="admin-tabs">
-        <button onClick={() => setActiveTab('userManage')} className={activeTab === 'userManage' ? 'active' : ''}>
-          사용자 관리
-        </button>
-        <button onClick={() => setActiveTab('createAdmin')} className={activeTab === 'createAdmin' ? 'active' : ''}>
-          관리자 계정 생성
-        </button>
+      <h2>관리자 페이지</h2>
+      <div className="tab-buttons">
+        <button onClick={() => setTab('user')}>사용자 관리</button>
+        <button onClick={() => setTab('movie')}>영화 삽입</button>
       </div>
 
-      <div className="admin-content">
-        {activeTab === 'userManage' && (
-          <div>
-            <h2>사용자 관리</h2>
-            <p>총 사용자 수: {userCnt}</p>
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>닉네임</th>
-                  <th>이메일</th>
+      {tab === 'user' && (
+        <div className="user-management">
+          <p>총 사용자 수: {userCnt}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>닉네임</th>
+                <th>이메일</th>
+                <th>휴대전화번호</th>
+                <th>생년월일</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td>{user.id}</td>
+                  <td>{user.nickname}</td>
+                  <td>{user.email}</td>
+                  <td>{user.phone}</td>
+                  <td>{user.birth}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    <td>{user.id}</td>
-                    <td>{user.nickname}</td>
-                    <td>{user.email}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="pagination">
-              <button onClick={() => setPage(page - 1)} disabled={page === 1}>
-                이전
-              </button>
-              <span>페이지 {page}</span>
-              <button onClick={() => setPage(page + 1)} disabled={page * size >= userCnt}>
-                다음
-              </button>
-            </div>
+              ))}
+            </tbody>
+          </table>
+          <div className="pagination">
+            <button onClick={() => setPage(page - 1)} disabled={page === 1}>
+              이전
+            </button>
+            <span>페이지 {page}</span>
+            <button onClick={() => setPage(page + 1)} disabled={page * size >= userCnt}>
+              다음
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {activeTab === 'createAdmin' && (
-          <div>
-            <h2>관리자 계정 생성</h2>
-            <form onSubmit={(e) => e.preventDefault()}>
-              <label>
-                관리자 아이디:
-                <input
-                  type="text"
-                  value={adminUsername}
-                  onChange={(e) => setAdminUsername(e.target.value)}
-                />
-              </label>
-              <label>
-                관리자 비밀번호:
-                <input
-                  type="password"
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                />
-              </label>
-              <button onClick={handleCreateAdminAccount}>생성</button>
-            </form>
-          </div>
-        )}
-      </div>
+      {tab === 'movie' && (
+        <div className="movie-insert">
+          <h3>영화 삽입</h3>
+          <form onSubmit={submitMovie}>
+            <div>
+              <label>제목:</label>
+              <input type="text" name="title" value={movieForm.title} onChange={handleMovieFormChange} required />
+            </div>
+            <div>
+              <label>감독:</label>
+              <input type="text" name="director" value={movieForm.director} onChange={handleMovieFormChange} required />
+            </div>
+            <div>
+              <label>장르:</label>
+              <input type="text" name="genre" value={movieForm.genre} onChange={handleMovieFormChange} required />
+            </div>
+            <div>
+              <label>개봉일:</label>
+              <input type="date" name="releaseDate" value={movieForm.releaseDate} onChange={handleMovieFormChange} required />
+            </div>
+            <div>
+              <label>이미지:</label>
+              <input type="file" name="image" onChange={handleMovieFormChange} required />
+            </div>
+            <button type="submit">영화 추가</button>
+          </form>
+        </div>
+      )}
     </div>
   );
 };

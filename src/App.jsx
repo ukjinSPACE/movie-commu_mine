@@ -27,11 +27,7 @@ const App = () => {
 
 
         {/* 자유 게시판 */}
-        <Route path="/board" element={
-                                <ProtectedRoute isAuthenticated={isAuthenticated}>
-                                  <BoardPage />
-                                </ProtectedRoute>
-                                } />
+        <Route path="/board" element={<BoardPage />} />
         <Route path="/board/:postId" element={<BoardDetail />} />
         <Route path="/board/write" element={<BoardWrite />} />
         <Route path="/board/:postId/modify" element={<BoardModify />} />
