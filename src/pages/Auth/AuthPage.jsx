@@ -97,7 +97,7 @@ const AuthPage = () => {
         const userDto = {
           id: formData.id,
           password: formData.password,
-          role: formData.role,
+          role: 'ROLE_USER',
           nickname: formData.nickname,
           phone: formData.phone,
           birth: formData.birth,

@@ -61,7 +61,7 @@ export const signup = async (userDto) => {
     return response.data; // 서버 응답 반환
   } catch (error) {
     console.error('회원가입 중 오류 발생:', error);
-    throw error.response?.data || new Error('회원가입 요청 중 에러 발생');
+    //throw error.response?.data || new Error('회원가입 요청 중 에러 발생');
   }
 };
 
