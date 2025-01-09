@@ -14,60 +14,42 @@ import {
 import './MyPage.css';
 import '../../styles/dark-theme.css'; // 공통 스타일
 
-// JWT 디코딩 함수
-const parseJwt = (token) => {
-  try {
-    return JSON.parse(atob(token.split('.')[1]));
-  } catch (error) {
-    return null;
-  }
-};
-
 const MyPage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('info'); // 활성화된 탭
   const [userInfo, setUserInfo] = useState({});
-  const [followers, setFollowers] = useState([]);
-  const [following, setFollowing] = useState([]);
   const [followerList, setFollowerList] = useState([]);
   const [followingList, setFollowingList] = useState([]);
   const [favoriteMovies, setFavoriteMovies] = useState([]);
   const [bookedMovies, setBookedMovies] = useState({ upcoming: [], past: [] });
 
-  // 로그인한 사용자 정보 가져오기
-  const token = localStorage.getItem('authToken'); // 로컬 스토리지에서 토큰 가져오기
-  const username = token ? parseJwt(token)?.username : null;
-
   useEffect(() => {
-    if (!username) {
-      alert('로그인 정보가 없습니다. 로그인 페이지로 이동합니다.');
-      navigate('/auth');
-      return;
-    }
-
+    // 사용자 정보를 서버에서 가져오기
     const fetchData = async () => {
       try {
-        const userPageInfo = await getUserPageInfo(username);
+        const userPageInfo = await getUserPageInfo(); // 사용자 정보 가져오기
         setUserInfo(userPageInfo);
 
-        const followingData = await getFollowingList(username, 10, 1);
+        const followingData = await getFollowingList(userPageInfo.username, 10, 1);
         setFollowingList(followingData);
 
-        const followerData = await getFollowerList(username, 10, 1);
+        const followerData = await getFollowerList(userPageInfo.username, 10, 1);
         setFollowerList(followerData);
 
-        const favoriteMoviesData = await getFavoriteMovies(username);
+        const favoriteMoviesData = await getFavoriteMovies(userPageInfo.username);
         setFavoriteMovies(favoriteMoviesData);
 
-        const bookedMoviesData = await getBookedMovies(username);
+        const bookedMoviesData = await getBookedMovies(userPageInfo.username);
         setBookedMovies(bookedMoviesData);
       } catch (error) {
         console.error('데이터를 가져오는 데 실패했습니다:', error);
+        alert('로그인 정보가 없거나 유효하지 않습니다. 로그인 페이지로 이동합니다.');
+        navigate('/auth');
       }
     };
 
     fetchData();
-  }, [username]);
+  }, [navigate]);
 
   const handleFollow = async (followee) => {
     try {
@@ -92,7 +74,7 @@ const MyPage = () => {
   const handleDeleteAccount = async () => {
     if (window.confirm('정말 계정을 삭제하시겠습니까?')) {
       try {
-        await deleteUser(username);
+        await deleteUser(userInfo.username);
         alert('계정이 삭제되었습니다.');
         navigate('/');
       } catch (error) {
@@ -116,7 +98,7 @@ const MyPage = () => {
     }
   };
 
-  if (!username) return null;
+  if (!userInfo.username) return null;
 
   return (
     <div className="my-page-container">
@@ -125,7 +107,7 @@ const MyPage = () => {
         <div className="profile-image"></div>
         <h2>{userInfo.nickname}</h2>
         <p>
-          팔로워: {followers.length} | 팔로잉: {following.length}
+          팔로워: {followerList.length} | 팔로잉: {followingList.length}
         </p>
         <button onClick={handleDeleteAccount}>계정 삭제</button>
       </div>

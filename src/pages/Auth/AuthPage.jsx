@@ -72,7 +72,8 @@ const AuthPage = () => {
 
       setLoading(true);
       try {
-        await login(formData.id, formData.password);
+        //await login(formData.id, formData.password)
+        console.log(await login(formData.id, formData.password));
         localStorage.setItem('authToken', 'your-token-here'); // 로그인 성공 후 토큰 저장
         setIsLoggedIn(true); // 로그인 상태로 변경
         alert('로그인 성공!');

@@ -31,12 +31,17 @@ export const login = async (username, password) => {
     const formData = new URLSearchParams();
     formData.append('username', username);
     formData.append('password', password);
+    console.log(username);
+    console.log(password);
 
-    const response = await axios.post(`${API_BASE_URL}/login`, formData);
+    const response = await axios.post(`${API_BASE_URL}/login`, formData, {
+      withCredentials: true, // 쿠키를 클라이언트에 저장하고 요청에 포함
+    });
+    console.log(response);
     return response.data; // 로그인 결과 반환
   } catch (error) {
     console.error('로그인 중 오류 발생:', error);
-    //throw error;
+    throw error;
   }
 };
 
