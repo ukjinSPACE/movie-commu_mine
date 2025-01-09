@@ -14,6 +14,14 @@ import {
 import './MyPage.css';
 import '../../styles/dark-theme.css'; // 공통 스타일
 
+// JWT 디코딩 함수
+const parseJwt = (token) => {
+  try {
+    return JSON.parse(atob(token.split('.')[1]));
+  } catch (error) {
+    return null;
+  }
+};
 
 const MyPage = () => {
   const navigate = useNavigate();
@@ -21,13 +29,22 @@ const MyPage = () => {
   const [userInfo, setUserInfo] = useState({});
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
-  const [username, setUsername] = useState('currentUser'); // 초기 사용자 이름 설정
   const [followerList, setFollowerList] = useState([]);
   const [followingList, setFollowingList] = useState([]);
   const [favoriteMovies, setFavoriteMovies] = useState([]);
   const [bookedMovies, setBookedMovies] = useState({ upcoming: [], past: [] });
 
+  // 로그인한 사용자 정보 가져오기
+  const token = localStorage.getItem('authToken'); // 로컬 스토리지에서 토큰 가져오기
+  const username = token ? parseJwt(token)?.username : null;
+
   useEffect(() => {
+    if (!username) {
+      alert('로그인 정보가 없습니다. 로그인 페이지로 이동합니다.');
+      navigate('/auth');
+      return;
+    }
+
     const fetchData = async () => {
       try {
         const userPageInfo = await getUserPageInfo(username);
@@ -48,6 +65,7 @@ const MyPage = () => {
         console.error('데이터를 가져오는 데 실패했습니다:', error);
       }
     };
+
     fetchData();
   }, [username]);
 
@@ -97,6 +115,8 @@ const MyPage = () => {
       }
     }
   };
+
+  if (!username) return null;
 
   return (
     <div className="my-page-container">
