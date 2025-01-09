@@ -5,12 +5,13 @@ import {
   getFollowingList,
   getFollowerList,
   followUser,
-  unfollowUser,
   deleteUser,
-  getBookedMovies,
-  cancelBooking,
-  getFavoriteMovies,
+  getMyReserve,
+  getPreviousReserve,
+  getLikedPosts,
+  getFavoriteMovies
 } from '../../services/userService';
+
 import './MyPage.css';
 import '../../styles/dark-theme.css'; // 공통 스타일
 
@@ -22,6 +23,8 @@ const MyPage = () => {
   const [followingList, setFollowingList] = useState([]);
   const [favoriteMovies, setFavoriteMovies] = useState([]);
   const [bookedMovies, setBookedMovies] = useState({ upcoming: [], past: [] });
+  const [likedPosts, setLikedPosts] = useState([]); // 내가 좋아한 게시글
+  const [myComments, setMyComments] = useState([]); // 내가 쓴 댓글
 
   useEffect(() => {
     // 사용자 정보를 서버에서 가져오기
@@ -31,16 +34,23 @@ const MyPage = () => {
         setUserInfo(userPageInfo);
 
         const followingData = await getFollowingList(userPageInfo.username, 10, 1);
-        setFollowingList(followingData);
+        setFollowingList(followingData.users);
 
         const followerData = await getFollowerList(userPageInfo.username, 10, 1);
-        setFollowerList(followerData);
+        setFollowerList(followerData.users);
 
         const favoriteMoviesData = await getFavoriteMovies(userPageInfo.username);
         setFavoriteMovies(favoriteMoviesData);
 
-        const bookedMoviesData = await getBookedMovies(userPageInfo.username);
-        setBookedMovies(bookedMoviesData);
+        const myReserve = await getMyReserve();
+        const previousReserve = await getPreviousReserve();
+        setBookedMovies({ upcoming: myReserve, past: previousReserve });
+
+        const likedPostsData = await getLikedPosts(userPageInfo.username, 1, 16);
+        setLikedPosts(likedPostsData.content);
+
+        const commentsData = await getLikedPosts(userPageInfo.username, 1, 16);
+        setMyComments(commentsData.content);
       } catch (error) {
         console.error('데이터를 가져오는 데 실패했습니다:', error);
         alert('로그인 정보가 없거나 유효하지 않습니다. 로그인 페이지로 이동합니다.');
@@ -51,50 +61,13 @@ const MyPage = () => {
     fetchData();
   }, [navigate]);
 
-  const handleFollow = async (followee) => {
+  const handleFollow = async (username) => {
     try {
-      await followUser(followee);
-      alert(`${followee}님을 팔로우 했습니다.`);
-      setFollowingList((prevList) => [...prevList, followee]);
+      await followUser(username);
+      alert(`${username}님을 팔로우했습니다.`);
     } catch (error) {
-      alert('팔로우 중 오류가 발생했습니다.');
-    }
-  };
-
-  const handleUnfollow = async (followee) => {
-    try {
-      await unfollowUser(followee);
-      alert(`${followee}님을 언팔로우 했습니다.`);
-      setFollowingList((prevList) => prevList.filter((follow) => follow !== followee));
-    } catch (error) {
-      alert('언팔로우 중 오류가 발생했습니다.');
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    if (window.confirm('정말 계정을 삭제하시겠습니까?')) {
-      try {
-        await deleteUser(userInfo.username);
-        alert('계정이 삭제되었습니다.');
-        navigate('/');
-      } catch (error) {
-        alert('계정 삭제 중 오류가 발생했습니다.');
-      }
-    }
-  };
-
-  const handleCancelBooking = async (movieId) => {
-    if (window.confirm('정말 예매를 취소하시겠습니까?')) {
-      try {
-        await cancelBooking(movieId);
-        alert('예매가 취소되었습니다.');
-        setBookedMovies((prev) => ({
-          ...prev,
-          upcoming: prev.upcoming.filter((movie) => movie.id !== movieId),
-        }));
-      } catch (error) {
-        alert('예매 취소 중 오류가 발생했습니다.');
-      }
+      console.error('팔로우에 실패했습니다:', error);
+      alert('팔로우에 실패했습니다.');
     }
   };
 
@@ -109,7 +82,7 @@ const MyPage = () => {
         <p>
           팔로워: {followerList.length} | 팔로잉: {followingList.length}
         </p>
-        <button onClick={handleDeleteAccount}>계정 삭제</button>
+        <button onClick={() => deleteUser(userInfo.username)}>계정 삭제</button>
       </div>
 
       {/* 탭과 콘텐츠 */}
@@ -131,6 +104,12 @@ const MyPage = () => {
           <button onClick={() => setActiveTab('bookedMovies')} className={activeTab === 'bookedMovies' ? 'active' : ''}>
             예매한 영화 리스트
           </button>
+          <button onClick={() => setActiveTab('likedPosts')} className={activeTab === 'likedPosts' ? 'active' : ''}>
+            내가 좋아한 글
+          </button>
+          <button onClick={() => setActiveTab('myComments')} className={activeTab === 'myComments' ? 'active' : ''}>
+            내가 쓴 댓글
+          </button>
         </div>
 
         {/* 콘텐츠 */}
@@ -151,7 +130,7 @@ const MyPage = () => {
                 {followerList.map((follower) => (
                   <li key={follower.id}>
                     {follower.nickname}
-                    <button onClick={() => handleFollow(follower.nickname)}>팔로우</button>
+                    <button onClick={() => handleFollow(follower.username)}>팔로우하기</button>
                   </li>
                 ))}
               </ul>
@@ -162,10 +141,7 @@ const MyPage = () => {
               <h2>팔로잉리스트</h2>
               <ul>
                 {followingList.map((followee) => (
-                  <li key={followee.id}>
-                    {followee.nickname}
-                    <button onClick={() => handleUnfollow(followee.nickname)}>언팔로우</button>
-                  </li>
+                  <li key={followee.id}>{followee.nickname}</li>
                 ))}
               </ul>
             </div>
@@ -183,19 +159,36 @@ const MyPage = () => {
           {activeTab === 'bookedMovies' && (
             <div>
               <h2>예매한 영화 리스트</h2>
-              <h3>상영 전 영화</h3>
+              <h3>다가오는 예약</h3>
               <ul>
                 {bookedMovies.upcoming.map((movie) => (
-                  <li key={movie.id}>
-                    {movie.title} ({movie.date})
-                    <button onClick={() => handleCancelBooking(movie.id)}>예매 취소</button>
-                  </li>
+                  <li key={movie.id}>{movie.title}</li>
                 ))}
               </ul>
-              <h3>상영 후 영화</h3>
+              <h3>지난 예약</h3>
               <ul>
                 {bookedMovies.past.map((movie) => (
-                  <li key={movie.id}>{movie.title} ({movie.date})</li>
+                  <li key={movie.id}>{movie.title}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {activeTab === 'likedPosts' && (
+            <div>
+              <h2>내가 좋아한 글</h2>
+              <ul>
+                {likedPosts.map((post) => (
+                  <li key={post.id}>{post.title}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {activeTab === 'myComments' && (
+            <div>
+              <h2>내가 쓴 댓글</h2>
+              <ul>
+                {myComments.map((comment) => (
+                  <li key={comment.id}>{comment.content}</li>
                 ))}
               </ul>
             </div>
@@ -205,7 +198,7 @@ const MyPage = () => {
 
       {/* 홈 버튼 */}
       <div className="home-button-container">
-        <button className="home-button" onClick={() => (window.location.href = '/')}>홈으로</button>
+        <button className="home-button" onClick={() => navigate('/')}>홈으로</button>
       </div>
     </div>
   );

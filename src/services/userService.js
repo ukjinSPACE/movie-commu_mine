@@ -70,6 +70,22 @@ export const signup = async (userDto) => {
   }
 };
 
+// 사용자 정보 업데이트
+export const updateUser = async (userDto) => {
+  try {
+    const formData = new URLSearchParams();
+    Object.entries(userDto).forEach(([key, value]) => formData.append(key, value));
+
+    const response = await axios.post(`${API_BASE_URL}/user/update`, formData, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
+    return response.data; // 업데이트 결과 반환
+  } catch (error) {
+    console.error('사용자 정보 업데이트 중 오류 발생:', error);
+    throw error.response?.data || new Error('사용자 정보 업데이트 실패');
+  }
+};
+
 // 사용자 삭제 API
 export const deleteUser = async (username) => {
   try {
@@ -104,7 +120,7 @@ export const unfollowUser = async (username) => {
     const formData = new URLSearchParams();
     formData.append('username', username);
 
-    const response = await axios.post(`${API_BASE_URL}/flwDelete`, formData);
+    const response = await axios.post(`${API_BASE_URL}/follower/delete`, formData);
     return response.data; // 언팔로우 결과 반환
   } catch (error) {
     console.error('언팔로우 중 오류 발생:', error);
@@ -158,32 +174,43 @@ export const getUserPageInfo = async (username) => {
   }
 };
 
-// 예약된 영화 조회
-export const getBookedMovies = async (userId) => {
+// 현재 예약 내역 조회
+export const getMyReserve = async () => {
   try {
-    const formData = new URLSearchParams();
-    formData.append('userId', userId);
-
-    const response = await axios.post(`${API_BASE_URL}/users/${userId}/booked-movies`, formData);
-    return response.data;
+    const response = await axios.get(`${API_BASE_URL}/myReserve`);
+    return response.data; // 예약 내역 반환
   } catch (error) {
-    console.error('예약된 영화 조회 중 오류 발생:', error);
-    throw error;
+    console.error('현재 예약 내역 조회 중 오류 발생:', error);
+    throw error.response?.data || new Error('현재 예약 내역 조회 실패');
   }
 };
 
-// 예약 취소
-export const cancelBooking = async (userId, bookingId) => {
+// 지난 예약 내역 조회
+export const getPreviousReserve = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/myReserve/previous`);
+    return response.data; // 지난 예약 내역 반환
+  } catch (error) {
+    console.error('지난 예약 내역 조회 중 오류 발생:', error);
+    throw error.response?.data || new Error('지난 예약 내역 조회 실패');
+  }
+};
+
+// 좋아한 게시글 목록 조회
+export const getLikedPosts = async (username, size, page) => {
   try {
     const formData = new URLSearchParams();
-    formData.append('userId', userId);
-    formData.append('bookingId', bookingId);
+    formData.append('username', username);
+    formData.append('size', size);
+    formData.append('page', page);
 
-    const response = await axios.post(`${API_BASE_URL}/users/${userId}/bookings/${bookingId}`, formData);
-    return response.data;
+    const response = await axios.get(`${API_BASE_URL}/like/post`, {
+      params: formData,
+    });
+    return response.data; // 좋아한 게시글 목록 반환
   } catch (error) {
-    console.error('예약 취소 중 오류 발생:', error);
-    throw error;
+    console.error('좋아한 게시글 목록 조회 중 오류 발생:', error);
+    throw error.response?.data || new Error('좋아한 게시글 목록 조회 실패');
   }
 };
 
