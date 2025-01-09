@@ -11,6 +11,7 @@ import {
   getLikedPosts,
   getFavoriteMovies
 } from '../../services/userService';
+import { cancelReservation } from '../../services/reserveService';
 
 import './MyPage.css';
 import '../../styles/dark-theme.css'; // 공통 스타일
@@ -68,6 +69,22 @@ const MyPage = () => {
     } catch (error) {
       console.error('팔로우에 실패했습니다:', error);
       alert('팔로우에 실패했습니다.');
+    }
+  };
+
+  const handleCancelReservation = async (seatId, scheduleId) => {
+    try {
+      await cancelReservation(seatId, scheduleId);
+      alert('예약이 취소되었습니다.');
+      setBookedMovies((prev) => ({
+        ...prev,
+        upcoming: prev.upcoming.filter(
+          (movie) => movie.seatId !== seatId || movie.scheduleId !== scheduleId
+        ),
+      }));
+    } catch (error) {
+      console.error('예약 취소 중 오류가 발생했습니다:', error);
+      alert('예약 취소에 실패했습니다.');
     }
   };
 
@@ -162,7 +179,14 @@ const MyPage = () => {
               <h3>다가오는 예약</h3>
               <ul>
                 {bookedMovies.upcoming.map((movie) => (
-                  <li key={movie.id}>{movie.title}</li>
+                  <li key={movie.id}>
+                    {movie.title}
+                    <button
+                      onClick={() => handleCancelReservation(movie.seatId, movie.scheduleId)}
+                    >
+                      예약 취소
+                    </button>
+                  </li>
                 ))}
               </ul>
               <h3>지난 예약</h3>
