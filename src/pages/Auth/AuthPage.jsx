@@ -44,15 +44,21 @@ const AuthPage = () => {
   }, [activeTab]);
 
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    
-    // 비밀번호와 비밀번호 확인이 일치하는지 실시간으로 체크
-    if (e.target.name === 'password' || e.target.name === 'passwordConfirm') {
-      setPasswordMatch(formData.password === formData.passwordConfirm);
-      setPasswordConfirmEmpty(formData.passwordConfirm === '');
-    }
+    const { name, value } = e.target;
+  
+    setFormData((prevFormData) => {
+      const updatedFormData = { ...prevFormData, [name]: value };
+  
+      // 비밀번호와 비밀번호 확인 일치 여부를 실시간으로 체크
+      if (name === 'password' || name === 'passwordConfirm') {
+        setPasswordMatch(updatedFormData.password === updatedFormData.passwordConfirm);
+        setPasswordConfirmEmpty(updatedFormData.passwordConfirm === '');
+      }
+  
+      return updatedFormData;
+    });
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
@@ -70,7 +76,7 @@ const AuthPage = () => {
         localStorage.setItem('authToken', 'your-token-here'); // 로그인 성공 후 토큰 저장
         setIsLoggedIn(true); // 로그인 상태로 변경
         alert('로그인 성공!');
-        navigate('/');
+        navigate('/mypage');
       } catch (error) {
         setErrorMessage(
           error.response?.data?.message || '로그인 중 오류가 발생했습니다.'
