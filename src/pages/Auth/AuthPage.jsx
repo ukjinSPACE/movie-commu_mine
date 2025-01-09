@@ -37,6 +37,10 @@ const AuthPage = () => {
     if (token) {
       setIsLoggedIn(true); // 토큰이 있다면 로그인 상태로 설정
     }
+
+    if (activeTab === 'login') {
+      setPasswordMatch(true);  // 로그인 탭일 때는 비밀번호 확인 체크를 하지 않음
+    }
   }, [activeTab]);
 
   const handleInputChange = (e) => {
@@ -270,12 +274,11 @@ const AuthPage = () => {
 
           {errorMessage && <p className="error-message">{errorMessage}</p>}
 
-          <button type="submit" disabled={loading || !passwordMatch || passwordConfirmEmpty}>
-            {loading
-              ? '처리 중...'
-              : activeTab === 'login'
-              ? '로그인'
-              : '회원가입'}
+          <button
+            type="submit"
+            disabled={loading || !formData.id.trim() || !formData.password.trim()}
+          >
+            {loading ? '처리 중...' : activeTab === 'login' ? '로그인' : '회원가입'}
           </button>
         </form>
       )}

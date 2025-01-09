@@ -36,7 +36,7 @@ export const login = async (username, password) => {
     return response.data; // 로그인 결과 반환
   } catch (error) {
     console.error('로그인 중 오류 발생:', error);
-    throw error;
+    //throw error;
   }
 };
 
