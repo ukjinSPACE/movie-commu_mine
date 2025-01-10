@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login, signup } from '../../services/userService';
+import { login, signup, updateUser } from '../../services/userService';
 import './AuthPage.css';
 import '../../styles/dark-theme.css'; // 공통 스타일
 
@@ -39,26 +39,26 @@ const AuthPage = () => {
     }
 
     if (activeTab === 'login') {
-      setPasswordMatch(true);  // 로그인 탭일 때는 비밀번호 확인 체크를 하지 않음
+      setPasswordMatch(true); // 로그인 탭일 때는 비밀번호 확인 체크를 하지 않음
     }
   }, [activeTab]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-  
+
     setFormData((prevFormData) => {
       const updatedFormData = { ...prevFormData, [name]: value };
-  
+
       // 비밀번호와 비밀번호 확인 일치 여부를 실시간으로 체크
       if (name === 'password' || name === 'passwordConfirm') {
         setPasswordMatch(updatedFormData.password === updatedFormData.passwordConfirm);
         setPasswordConfirmEmpty(updatedFormData.passwordConfirm === '');
       }
-  
+
       return updatedFormData;
     });
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
@@ -72,9 +72,8 @@ const AuthPage = () => {
 
       setLoading(true);
       try {
-        //await login(formData.id, formData.password)
-        console.log(await login(formData.id, formData.password));
-        localStorage.setItem('authToken', 'your-token-here'); // 로그인 성공 후 토큰 저장
+        const token = await login(formData.id, formData.password);
+        localStorage.setItem('authToken', token); // 로그인 성공 후 토큰 저장
         setIsLoggedIn(true); // 로그인 상태로 변경
         alert('로그인 성공!');
         navigate('/mypage');
@@ -109,12 +108,21 @@ const AuthPage = () => {
           id: formData.id,
           password: formData.password,
           role: 'ROLE_USER',
-          nickname: formData.nickname,
           phone: formData.phone,
           birth: formData.birth,
         };
 
+        // 회원가입 요청
         await signup(userDto);
+
+        // 사용자 정보 업데이트 요청
+        await updateUser({
+          id: userDto.id,
+          nickname: formData.nickname,
+          phone: formData.phone,
+          birth: formData.birth,
+        });
+
         alert('회원가입 성공!');
         //navigate('/');
       } catch (error) {
@@ -226,18 +234,18 @@ const AuthPage = () => {
                   onChange={handleInputChange}
                   disabled={loading}
                 />
-                {/* 비밀번호 확인란이 비어있을 때 메시지 표시 */}
                 {passwordConfirmEmpty && (
                   <p style={{ color: 'orange' }}>비밀번호 재확인이 필요합니다</p>
                 )}
-                {/* 비밀번호 일치 여부 표시, 비밀번호 확인란이 비어있지 않으면 표시 */}
                 {!passwordConfirmEmpty && (
                   <p
                     style={{
                       color: passwordMatch ? 'green' : 'red',
                     }}
                   >
-                    {passwordMatch ? '비밀번호가 일치합니다' : '비밀번호가 일치하지 않습니다'}
+                    {passwordMatch
+                      ? '비밀번호가 일치합니다'
+                      : '비밀번호가 일치하지 않습니다'}
                   </p>
                 )}
               </div>

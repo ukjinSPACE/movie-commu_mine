@@ -1,24 +1,30 @@
 import axios from 'axios';
+axios.defaults.withCredentials = true; // 모든 요청에 쿠키 포함
 
 const API_BASE_URL = 'http://localhost:8080';
 
-// 현재 사용자 역할 가져오기
-export const getCurrentUserRole = async () => {
+// 현재 사용자 정보 가져오기 (application/x-www-form-urlencoded)
+export const getUserinfo = async () => {
   try {
-    const formData = new URLSearchParams();
-    const response = await axios.post(`${API_BASE_URL}/do`, formData);
-    return response.data; // 사용자 역할 반환 (e.g., 'ROLE_USER', 'ROLE_ADMIN')
+    const response = await axios.get(`${API_BASE_URL}/do`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+    return response.data;
   } catch (error) {
-    console.error('사용자 역할 가져오기 중 오류 발생:', error);
+    console.error('사용자 정보 가져오기 중 오류 발생:', error);
     throw error;
   }
 };
 
+
+
 // 사용자가 관리자 역할인지 확인
 export const isAdminUser = async () => {
   try {
-    const role = await getCurrentUserRole();
-    return role === 'ROLE_ADMIN'; // 역할이 'ADMIN'이면 true 반환
+    const userInfo = await getUserinfo(); // 사용자 정보 가져오기
+    return userInfo.role === 'ROLE_ADMIN'; // 역할이 'ROLE_ADMIN'이면 true 반환
   } catch (error) {
     console.error('사용자 역할 확인 중 오류 발생:', error);
     return false; // 오류 발생 시 false 반환
@@ -90,15 +96,22 @@ export const updateUser = async (userDto) => {
 export const deleteUser = async (username) => {
   try {
     const formData = new URLSearchParams();
-    formData.append('username', username);
+    formData.append('username', username);  // form data로 전달
 
     const response = await axios.post(`${API_BASE_URL}/user/delete`, formData);
-    return response.data; // 삭제 결과 반환
+    
+    if (response.data === 'deleted') {
+      alert('사용자가 삭제되었습니다.');
+    } else {
+      alert('사용자 삭제에 실패했습니다.');
+    }
   } catch (error) {
-    console.error('사용자 삭제 중 오류 발생:', error);
-    throw error;
+    console.error('사용자 삭제 중 오류 발생:', error.response?.data || error.message);
+    alert('사용자 삭제에 실패했습니다.');
   }
 };
+
+
 
 // 팔로우 API
 export const followUser = async (username) => {
@@ -114,14 +127,14 @@ export const followUser = async (username) => {
   }
 };
 
-// 언팔로우 API
+// 팔로워 삭제 API
 export const unfollowUser = async (username) => {
   try {
     const formData = new URLSearchParams();
     formData.append('username', username);
 
     const response = await axios.post(`${API_BASE_URL}/follower/delete`, formData);
-    return response.data; // 언팔로우 결과 반환
+    return response.data; // 팔로워삭제 결과 반환
   } catch (error) {
     console.error('언팔로우 중 오류 발생:', error);
     throw error;
@@ -131,12 +144,13 @@ export const unfollowUser = async (username) => {
 // 팔로잉 목록 가져오기 API
 export const getFollowingList = async (username, size, page) => {
   try {
-    const formData = new URLSearchParams();
-    formData.append('username', username);
-    formData.append('size', size);
-    formData.append('page', page);
-
-    const response = await axios.post(`${API_BASE_URL}/followingList`, formData);
+    const response = await axios.get(`${API_BASE_URL}/followingList`, {
+      params: {
+        username,
+        size,
+        page,
+      },
+    });
     return response.data; // 팔로잉 목록 반환
   } catch (error) {
     console.error('팔로잉 목록 가져오기 중 오류 발생:', error);
@@ -145,15 +159,18 @@ export const getFollowingList = async (username, size, page) => {
 };
 
 // 팔로워 목록 가져오기 API
-export const getFollowerList = async (username, size, page) => {
+export const getFollowerList = async (username, size = 10, page = 1) => {
   try {
-    const formData = new URLSearchParams();
-    formData.append('username', username);
-    formData.append('size', size);
-    formData.append('page', page);
-
-    const response = await axios.post(`${API_BASE_URL}/followerList`, formData);
-    return response.data; // 팔로워 목록 반환
+    // GET 방식으로 쿼리 파라미터를 URL에 포함하여 요청
+    const response = await axios.get(`http://localhost:8080/followerList`, {
+      params: {
+        username,
+        size,
+        page
+      },
+      withCredentials: true // 로그인 상태를 유지하려면 쿠키도 함께 전송
+    });
+    return response.data; // 서버에서 반환한 데이터 반환
   } catch (error) {
     console.error('팔로워 목록 가져오기 중 오류 발생:', error);
     throw error;
@@ -214,16 +231,29 @@ export const getLikedPosts = async (username, size, page) => {
   }
 };
 
-// 즐겨찾기 영화 조회
-export const getFavoriteMovies = async (userId) => {
+// 영화 찜하기 API
+export const ggimMovie = async (movieId) => {
   try {
     const formData = new URLSearchParams();
-    formData.append('userId', userId);
+    formData.append('movieId', movieId);
 
-    const response = await axios.post(`${API_BASE_URL}/users/${userId}/favorite-movies`, formData);
-    return response.data;
+    const response = await axios.post(`${API_BASE_URL}/ggim`, formData, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
+    return response.data; // 찜 결과 반환
   } catch (error) {
-    console.error('즐겨찾기 영화 조회 중 오류 발생:', error);
-    throw error;
+    console.error('영화 찜 중 오류 발생:', error);
+    throw error.response?.data || new Error('영화 찜 실패');
+  }
+};
+
+// 찜한 영화 불러오기 API
+export const getGgimMovies = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/ggim/movie`);
+    return response.data; // 찜한 영화 목록 반환
+  } catch (error) {
+    console.error('찜한 영화 불러오기 중 오류 발생:', error);
+    throw error.response?.data || new Error('찜한 영화 목록 조회 실패');
   }
 };
