@@ -26,6 +26,7 @@ const MyPage = () => {
   const [favoriteMovies, setFavoriteMovies] = useState([]);
   const [bookedMovies, setBookedMovies] = useState({ upcoming: [], past: [] });
   const [likedPosts, setLikedPosts] = useState([]);
+  const [userPosts, setUserPosts] = useState([]); // 내가 쓴 글 상태 추가
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,6 +63,9 @@ const MyPage = () => {
     
         const likedPosts = await getLikedPosts(userId, 1, 16);
         setLikedPosts(likedPosts.content || []);
+
+        const postsData = await searchPostsByUsername(userInfoResponse.id, 1, 10); // page와 size 설정
+        setUserPosts(postsData.content || []);
     
       } catch (error) {
         console.error('데이터를 가져오는 데 실패했습니다:', error);
@@ -95,6 +99,9 @@ const MyPage = () => {
         break;
       case 'likedPosts':
         getLikedPosts(userInfo?.id, 1, 16).then((data) => setLikedPosts(data.content));
+        break;
+      case 'userPosts': // 내가 쓴 글 탭
+        searchPostsByUsername(userInfo?.id, 1, 10).then((data) => setUserPosts(data.content));
         break;
     }
   }, [activeTab, userInfo?.id]);
@@ -176,6 +183,9 @@ const MyPage = () => {
           </button>
           <button onClick={() => setActiveTab('likedPosts')} className={activeTab === 'likedPosts' ? 'active' : ''}>
             좋아하는 게시글 리스트
+          </button>
+          <button onClick={() => setActiveTab('userPosts')} className={activeTab === 'userPosts' ? 'active' : ''}>
+            내가 쓴 글
           </button>
         </div>
 
@@ -292,6 +302,29 @@ const MyPage = () => {
                 </ul>
               ) : (
                 <p>좋아한 게시글이 없습니다.</p>
+              )}
+            </div>
+          )}
+          {activeTab === 'userPosts' && (
+            <div>
+              <h2>내가 쓴 글</h2>
+              {Array.isArray(userPosts) && userPosts.length > 0 ? (
+                <ul>
+                  {userPosts.map((post) => (
+                    <li key={post.postId}>
+                      <h3>{post.title}</h3>
+                      <p>작성일: {new Date(post.created).toLocaleDateString()}</p>
+                      <p>조회수: {post.cnt} | 좋아요: {post.heart}</p>
+                      {post.fileAttached > 0 ? (
+                        <p>첨부 파일 수: {post.fileAttached}</p>
+                      ) : (
+                        <p>첨부 파일 없음</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>게시글이 없습니다.</p>
               )}
             </div>
           )}
