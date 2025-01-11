@@ -162,7 +162,7 @@ export const getFollowingList = async (username, size, page) => {
 export const getFollowerList = async (username, size = 10, page = 1) => {
   try {
     // GET 방식으로 쿼리 파라미터를 URL에 포함하여 요청
-    const response = await axios.get(`http://localhost:8080/followerList`, {
+    const response = await axios.get(`${API_BASE_URL}/followerList`, {
       params: {
         username,
         size,

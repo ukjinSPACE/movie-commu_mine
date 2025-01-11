@@ -41,76 +41,99 @@ const MyPage = () => {
     
         const userId = userInfoResponse.data?.id || '';  // 사용자 ID
         
-        // GET 방식으로 팔로워 목록 가져오기
-        const followerData = await getFollowerList(userId, 10, 1);
-        setFollowerList(followerData.users);
-    
-        // 나머지 데이터 처리
-        const followingData = await getFollowingList(userId, 10, 1);
-        setFollowingList(followingData.users);
-    
-        const movies = await getGgimMovies();
-        if (Array.isArray(movies)) { // 데이터가 배열인지 확인
-          setFavoriteMovies(movies); // 상태 업데이트
-        } else {
-          console.error("API 응답 데이터가 예상과 다릅니다:", movies);
-          setFavoriteMovies([]); // 배열이 아닌 경우 빈 배열로 초기화
+        // 초기 데이터 가져오기
+        const [followerData, followingData, movies, myReserve, previousReserve, likedPostData, postsData] =
+          await Promise.all([
+            getFollowerList(userId, 10, 0),
+            getFollowingList(userId, 10, 0),
+            getGgimMovies(),
+            getMyReserve(),
+            getPreviousReserve(),
+            getLikedPosts(userId, 0, 16),
+            searchPostsByUsername(userId, 0, 10),
+          ]);
+
+          setFollowerList(followerData.users || []);
+          setFollowingList(followingData.users || []);
+          setFavoriteMovies(Array.isArray(movies) ? movies : []);
+          setBookedMovies({ upcoming: myReserve, past: previousReserve });
+          setLikedPosts(likedPostData.content || []);
+          setUserPosts(postsData.content || []);
+        } catch (error) {
+          console.error('데이터를 가져오는 데 실패했습니다:', error);
+          alert('로그인 정보가 없거나 유효하지 않습니다. 로그인 페이지로 이동합니다.');
+          //navigate('/auth');
         }
-    
-        const myReserve = await getMyReserve();
-        const previousReserve = await getPreviousReserve();
-        setBookedMovies({ upcoming: myReserve, past: previousReserve });
-    
-        const likedPosts = await getLikedPosts(userId, 1, 16);
-        setLikedPosts(likedPosts.content || []);
-
-        const postsData = await searchPostsByUsername(userInfoResponse.id, 1, 10); // page와 size 설정
-        setUserPosts(postsData.content || []);
-    
-      } catch (error) {
-        console.error('데이터를 가져오는 데 실패했습니다:', error);
-        alert('로그인 정보가 없거나 유효하지 않습니다. 로그인 페이지로 이동합니다.');
-        //navigate('/auth');
-      }
-    };
-    
-
-    fetchData();
-  }, [navigate]);
+      };
+  
+      fetchData();
+    }, [navigate]);
 
   // 탭별로 데이터를 가져오기
   useEffect(() => {
-    switch (activeTab) {
-      case 'followers':
-        getFollowerList(userInfo?.id, 10, 0).then((data) => setFollowerList(data.users));
-        break;
-      case 'following':
-        getFollowingList(userInfo?.id, 10, 1).then((data) => setFollowingList(data.users));
-        break;
-      case 'favoriteMovies':
-        getGgimMovies().then((movies) => {
-          if (Array.isArray(movies)) setFavoriteMovies(movies);
-          else console.error('API 응답 데이터가 예상과 다릅니다:', movies);
-        });
-        break;
-      case 'bookedMovies':
-        getMyReserve().then((data) => setBookedMovies((prev) => ({ ...prev, upcoming: data })));
-        getPreviousReserve().then((data) => setBookedMovies((prev) => ({ ...prev, past: data })));
-        break;
-      case 'likedPosts':
-        getLikedPosts(userInfo?.id, 1, 16).then((data) => setLikedPosts(data.content));
-        break;
-      case 'userPosts': // 내가 쓴 글 탭
-        searchPostsByUsername(userInfo?.id, 1, 10).then((data) => setUserPosts(data.content));
-        break;
-    }
-  }, [activeTab, userInfo?.id]);
+    const fetchData = async () => {
+      if (!userInfo) return; // userInfo가 없으면 API 호출 중단
+  
+      try {
+        switch (activeTab) {
+          case 'followers':
+            if (followerList.length === 0) {
+              const data = await getFollowerList(userInfo?.id, 10, 0);
+              setFollowerList(data.users || []);
+            }
+            break;
+          case 'following':
+            if (followingList.length === 0) {
+              const data = await getFollowingList(userInfo?.id, 10, 0);
+              setFollowingList(data.users || []);
+            }
+            break;
+          case 'favoriteMovies':
+            if (favoriteMovies.length === 0) {
+              const movies = await getGgimMovies();
+              setFavoriteMovies(Array.isArray(movies) ? movies : []);
+            }
+            break;
+          case 'bookedMovies':
+            if (bookedMovies.upcoming.length === 0 || bookedMovies.past.length === 0) {
+              const [upcoming, past] = await Promise.all([getMyReserve(), getPreviousReserve()]);
+              setBookedMovies({ upcoming, past });
+            }
+            break;
+          case 'likedPosts':
+            if (likedPosts.length === 0) {
+              const data = await getLikedPosts(userInfo?.id, 0, 16);
+              setLikedPosts(data.content || []);
+            }
+            break;
+          case 'userPosts':
+            if (userPosts.length === 0) {
+              const data = await searchPostsByUsername(userInfo?.id, 0, 10);
+              setUserPosts(data.content || []);
+            }
+            break;
+          default:
+            break;
+        }
+      } catch (error) {
+        console.error(`Error fetching data for ${activeTab}:`, error);
+      }
+    };
+  
+    fetchData();
+  }, [activeTab, userInfo]); // 의존성을 최소화
+  
 
   const handleFollow = async (username) => {
     try {
       await followUser(username);
-      alert('${username}님을 팔로우했습니다.');
-      setFollowingList((prevList) => [...prevList, { id: username, nickname: username }]);
+      alert(`${username}님을 팔로우했습니다.`);
+      setFollowingList((prevList) => {
+        if (!prevList.some((user) => user.id === username)) {
+          return [...prevList, { id: username, nickname: username }];
+        }
+        return prevList;
+      });
     } catch (error) {
       console.error('팔로우에 실패했습니다:', error);
       alert('팔로우에 실패했습니다.');
@@ -124,7 +147,7 @@ const MyPage = () => {
         await deleteUser(username);
         alert('계정이 삭제되었습니다.');
         // 삭제 후 홈 페이지나 다른 페이지로 이동
-        navigate('/');
+        navigate('/auth');
       } catch (error) {
         console.error('계정 삭제 중 오류 발생:', error);
         alert('계정 삭제에 실패했습니다.');
@@ -208,8 +231,8 @@ const MyPage = () => {
                 <p>팔로워가 없습니다.</p>
               ) : (
                 followerList.map((follower) => (
-                  <li key={follower.id}>
-                    {follower.nickname ? follower.nickname : '닉네임 없음'}
+                  <li key={follower.id}>         
+                    {follower.nickname || follower.id}
                     <button onClick={() => handleFollow(follower.id)}>팔로우하기</button>
                   </li>
                 ))
@@ -225,7 +248,9 @@ const MyPage = () => {
               ) : (
                 <ul>
                   {followingList.map((followee) => (
-                    <li key={followee.id}>{followee.nickname}</li>
+                    <li key={followee.id}>
+                      {followee.nickname || followee.id} {/* nickname이 없으면 id 표시 */}
+                    </li>
                   ))}
                 </ul>
               )}
