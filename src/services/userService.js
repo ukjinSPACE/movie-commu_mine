@@ -214,7 +214,7 @@ export const getPreviousReserve = async () => {
 };
 
 // 좋아한 게시글 목록 조회
-export const getLikedPosts = async (username, size, page) => {
+export const getLikedPosts = async (username, page, size) => {
   try {
     const formData = new URLSearchParams();
     formData.append('username', username);

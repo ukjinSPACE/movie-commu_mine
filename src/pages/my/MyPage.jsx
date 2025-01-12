@@ -52,7 +52,6 @@ const MyPage = () => {
             getLikedPosts(userId, 0, 16),
             searchPostsByUsername(userId, 0, 10),
           ]);
-
           setFollowerList(followerData.users || []);
           setFollowingList(followingData.users || []);
           setFavoriteMovies(Array.isArray(movies) ? movies : []);
@@ -65,7 +64,6 @@ const MyPage = () => {
           //navigate('/auth');
         }
       };
-  
       fetchData();
     }, [navigate]);
 
@@ -78,38 +76,46 @@ const MyPage = () => {
         switch (activeTab) {
           case 'followers':
             if (followerList.length === 0) {
-              const data = await getFollowerList(userInfo?.id, 10, 0);
-              setFollowerList(data.users || []);
+              const followerdata = await getFollowerList(userInfo?.id, 10, 0);
+              console.log("팔로워 리스트 데이터:", followerdata);
+              setFollowerList(followerdata.users || []);
             }
             break;
           case 'following':
             if (followingList.length === 0) {
-              const data = await getFollowingList(userInfo?.id, 10, 0);
-              setFollowingList(data.users || []);
+              const followingdata = await getFollowingList(userInfo?.id, 10, 0);
+              console.log("팔로잉 리스트 데이터:", followingdata);
+              setFollowingList(followingdata.users || []);
             }
             break;
           case 'favoriteMovies':
             if (favoriteMovies.length === 0) {
               const movies = await getGgimMovies();
-              setFavoriteMovies(Array.isArray(movies) ? movies : []);
+              const movieList = movies?.movie || [];
+              console.log("찜한 영화 데이터:", movieList);
+              setFavoriteMovies(Array.isArray(movieList) ? movieList : []);
             }
             break;
           case 'bookedMovies':
             if (bookedMovies.upcoming.length === 0 || bookedMovies.past.length === 0) {
               const [upcoming, past] = await Promise.all([getMyReserve(), getPreviousReserve()]);
+              console.log("예매 데이터 - 다가오는 예약:", upcoming);
+              console.log("예매 데이터 - 지난 예약:", past);
               setBookedMovies({ upcoming, past });
             }
             break;
           case 'likedPosts':
             if (likedPosts.length === 0) {
               const data = await getLikedPosts(userInfo?.id, 0, 16);
-              setLikedPosts(data.content || []);
+              const dataList = data?.post || [];
+              console.log("좋아한 게시글 데이터:", dataList);
+              setLikedPosts(dataList.content || []);
             }
             break;
           case 'userPosts':
             if (userPosts.length === 0) {
-              const data = await searchPostsByUsername(userInfo?.id, 0, 10);
-              setUserPosts(data.content || []);
+              const postsData = await searchPostsByUsername(userInfo.id, 0, 10);
+              setUserPosts(postsData?.post?.content || []);
             }
             break;
           default:
@@ -218,7 +224,7 @@ const MyPage = () => {
             <div>
               <h2>회원정보</h2>
               <p>닉네임: {userInfo.nickname}</p>
-              <p>이메일: {userInfo.id + ' @ connan.com' }</p>
+              <p>아이디: {userInfo.id}</p>
               <p>휴대폰번호: {userInfo.phone}</p>
               <p>생년월일: {userInfo.birth}</p>
             </div>
@@ -333,18 +339,12 @@ const MyPage = () => {
           {activeTab === 'userPosts' && (
             <div>
               <h2>내가 쓴 글</h2>
-              {Array.isArray(userPosts) && userPosts.length > 0 ? (
+              {userPosts.length > 0 ? (
                 <ul>
                   {userPosts.map((post) => (
                     <li key={post.postId}>
                       <h3>{post.title}</h3>
                       <p>작성일: {new Date(post.created).toLocaleDateString()}</p>
-                      <p>조회수: {post.cnt} | 좋아요: {post.heart}</p>
-                      {post.fileAttached > 0 ? (
-                        <p>첨부 파일 수: {post.fileAttached}</p>
-                      ) : (
-                        <p>첨부 파일 없음</p>
-                      )}
                     </li>
                   ))}
                 </ul>
