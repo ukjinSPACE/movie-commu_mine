@@ -31,6 +31,7 @@ const AdminPage = () => {
   const fetchUsers = async () => {
     try {
       const response = await getUserManageInfo(size, page);
+      //console.log('API Response:', response); // 응답 데이터 확인
       setUsers(response.users);
       setUserCnt(response.userCnt);
     } catch (error) {
