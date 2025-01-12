@@ -67,9 +67,8 @@ const AdminPage = () => {
               <tr>
                 <th>ID</th>
                 <th>닉네임</th>
-                <th>이메일</th>
-                <th>휴대전화번호</th>
                 <th>생년월일</th>
+                <th>관리자여부</th>
                 <th> </th> {/* 삭제 버튼 열 추가 */}
               </tr>
             </thead>
@@ -78,9 +77,8 @@ const AdminPage = () => {
                 <tr key={user.id}>
                   <td>{user.id}</td>
                   <td>{user.nickname}</td>
-                  <td>{user.email}</td>
-                  <td>{user.phone}</td>
                   <td>{user.birth}</td>
+                  <td>{user.role}</td>
                   <td>
                     <button
                       className="delete-button"
