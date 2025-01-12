@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getUserManageInfo } from '../../services/adminService';
 import { useNavigate } from 'react-router-dom';
-import { isAdminUser } from '../../services/userService';
+import { isAdminUser, deleteUser } from '../../services/userService';
 import './AdminPage.css';
 import '../../styles/dark-theme.css'; // 공통 스타일
 
@@ -12,6 +12,7 @@ const AdminPage = () => {
   const [userCnt, setUserCnt] = useState(0);
   const [page, setPage] = useState(1);
   const [size] = useState(10); // 한 페이지에 보여줄 사용자 수
+  const [id, setid] = useState()
 
   const navigate = useNavigate();
 
@@ -39,9 +40,20 @@ const AdminPage = () => {
     }
   };
   
+  const DeletehUsers = async () => {
+    try {
+      const response = await deleteUser(id); 
+      setUsers(response.users || []);
+      setUserCnt(response.userCnt || 0);
+    } catch (error) {
+      console.error('사용자계정 삭제 중 오류가 발생했습니다:', error);
+    }
+  };
 
+{/* 
   const deleteUser = (id) => {
     const userToDelete = users.find(user => user.id === id); // 삭제할 사용자 정보 찾기
+    const delet = await deleteUser(user)
     const confirmation = window.confirm(`${userToDelete.nickname} 님을 정말로 삭제하시겠습니까?`);
 
     if (confirmation) {
@@ -51,6 +63,7 @@ const AdminPage = () => {
       alert(`${userToDelete.nickname} 님이 삭제되었습니다.`);
     }
   };
+*/}
 
   return (
     <div className="admin-page-container">
