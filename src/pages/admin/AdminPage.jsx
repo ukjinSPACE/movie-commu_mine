@@ -30,14 +30,15 @@ const AdminPage = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await getUserManageInfo(size, page);
-      //console.log('API Response:', response); // 응답 데이터 확인
-      setUsers(response.users);
-      setUserCnt(response.userCnt);
+      // page - 1로 수정하여 0 기반 페이지로 API 요청
+      const response = await getUserManageInfo(size, page - 1); 
+      setUsers(response.users || []);
+      setUserCnt(response.userCnt || 0);
     } catch (error) {
       console.error('사용자 관리 정보를 가져오는 중 오류가 발생했습니다:', error);
     }
   };
+  
 
   const deleteUser = (id) => {
     const userToDelete = users.find(user => user.id === id); // 삭제할 사용자 정보 찾기
@@ -96,8 +97,8 @@ const AdminPage = () => {
             <button onClick={() => setPage(page - 1)} disabled={page === 1}>
               이전
             </button>
-            <span>페이지 {page}</span>
-            <button onClick={() => setPage(page + 1)} disabled={page * size >= userCnt}>
+            <span>페이지 {page}</span> {/* 여전히 1부터 표시 */}
+            <button onClick={() => setPage(page + 1)} disabled={(page - 1) * size >= userCnt}>
               다음
             </button>
           </div>
